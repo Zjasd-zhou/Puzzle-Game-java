@@ -65,6 +65,10 @@ public class GameJFrame extends JFrame implements KeyListener, ActionListener {
 
         //设置界面可见
         this.setVisible(true);
+
+        //优化游玩须知的出现位置，将三句话压缩，优化游戏体验
+        String tips = "1. 使用方向键：上下左右游玩\n2. 长按 A 键可预览目标图\n3. 更多玩法，请预览功能！";
+        JOptionPane.showMessageDialog(this, tips, "游玩须知", -1);
     }
 
     private void initData() {

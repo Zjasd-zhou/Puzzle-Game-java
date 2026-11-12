@@ -86,13 +86,6 @@ public class LoginJFrame extends JFrame implements ActionListener {
                 // 弹窗提示成功
                     JOptionPane.showMessageDialog(this, "登录成功！即将进入游戏...","系统提示",JOptionPane.INFORMATION_MESSAGE);
 
-                //更新：添加游玩须知 1.使用方向键上下左右 2.长按A可以预览目标图
-
-                JOptionPane.showMessageDialog(this,"使用方向键: 上下左右游玩","游玩须知",-1);
-                JOptionPane.showMessageDialog(this,"长按A键可预览目标图 ","游玩须知",-1);
-                JOptionPane.showMessageDialog(this,"更多玩法，请预览功能!","游玩须知",-1);
-
-
                 // 关闭当前登录界面
                 this.setVisible(false);
 
