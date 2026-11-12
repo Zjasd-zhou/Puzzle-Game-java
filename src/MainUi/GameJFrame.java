@@ -1,0 +1,404 @@
+package MainUi;
+
+import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.Random;
+
+public class GameJFrame extends JFrame implements KeyListener, ActionListener {
+    //游戏主界面
+
+    //定义二维数组
+    //用于管理数据
+    int[][] data = new int[4][4];
+
+    //定义步数统计器
+    int step = 0;
+
+    //定义二维数组，记录胜利条件
+    int[][] win = {
+            {1, 2, 3, 4},
+            {5, 6, 7, 8},
+            {9, 10, 11, 12},
+            {13, 14, 15, 0}
+    };
+
+    //记录空白图片在二维数组的位置
+    int x = 0;
+    int y = 0;
+
+    //记录当前展示图片的路径
+    String path = "PuzzleImage\\image\\car\\car1\\";
+
+
+    //创建选项下面的对象条目
+    //美女，汽车，动物，嵌套在更换图片里面
+    JMenu changeImage = new JMenu("更换图片");
+
+    JMenuItem girl = new JMenuItem("美女");
+    JMenuItem animal = new JMenuItem("动物");
+    JMenuItem car = new JMenuItem("汽车");
+    JMenuItem replayItem = new JMenuItem("重新游戏");
+    JMenuItem reLoginItem = new JMenuItem("重新登录");
+    JMenuItem closeItem = new JMenuItem("关闭游戏");
+
+    JMenuItem aboutItem = new JMenuItem("联系方法");
+
+    public GameJFrame() {
+
+        //初始化菜单
+        initJFrame();
+
+        //设置菜单，加入选项功能
+        SetMenu();
+
+        //初始化shuju
+        initData();
+
+        //初始化图片
+        intiImage();
+
+        //设置界面可见
+        this.setVisible(true);
+    }
+
+    private void initData() {
+
+        //定义一个一维数组
+        int[] arr = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        Random r = new Random();
+        for (int i = 0; i < arr.length; i++) {
+            int index = r.nextInt(arr.length);
+            int temp = arr[i];
+            arr[i] = arr[index];
+            arr[index] = temp;
+        }
+
+        //注意二维数组添加数据方式
+        for (int i = 0; i < arr.length; i++) {
+
+            if (arr[i] == 0) {
+                x = i / 4;
+                y = i % 4;
+            }
+            data[i / 4][i % 4] = arr[i];
+        }
+
+    }
+
+    private void intiImage() {
+
+        //清除加载的图片
+        this.getContentPane().removeAll();
+
+        //发现x，y的变化规律(X:105 * j(每一行图片的像素都是一样的，依次向右移动105)，y方向同理，只有每行结束后i才增加)，利用双重循环简化代码
+        for (int i = 0; i < 4; i++) {
+            //内循环执行四次
+            for (int j = 0; j < 4; j++) {
+                int number = data[i][j];
+
+                if (number == 0) {
+                    continue;
+                }
+                //内循环：每行添加四张图片
+                //创建一个ImageIcon对象,创建一个JLabel对象
+                //直接接受icon简化代码
+                JLabel jLabel = new JLabel(ResourceLoader.loadIcon(path + number + ".png"));
+                //指定图片位置
+                jLabel.setBounds(105 * j + 83, 105 * i + 134, 105, 105);
+                //为图片加入边框
+                jLabel.setBorder(new BevelBorder(1));// 0:图片凸起 1:图片凹陷
+                //将jla添加到界面中
+                this.getContentPane().add(jLabel);
+
+
+            }
+        }
+
+        //添加背景图片
+        JLabel jLabel = new JLabel(ResourceLoader.loadIcon("PuzzleImage\\img.png"));
+        jLabel.setBounds(40, 40, 508, 560);
+        this.add(jLabel);
+
+
+        if (victory()) {
+            //如果成功，就加载胜利图标
+            JLabel winLabel = new JLabel(ResourceLoader.loadIcon("PuzzleImage\\win_transparent.png"));
+            winLabel.setBounds(191, 242, 204, 204);
+            this.getContentPane().add(winLabel);
+            this.getContentPane().setComponentZOrder(winLabel, 0);
+        }
+
+        //添加步数
+        JLabel stepJLabel = new JLabel("步数：" + step);
+        stepJLabel.setBounds(10, 10, 100, 20);
+        this.add(stepJLabel);
+
+
+        //刷新界面
+        this.getContentPane().repaint();
+
+    }
+
+    private void SetMenu() {
+        //创建整个菜单对象
+        JMenuBar jMenuBar = new JMenuBar();
+
+        //创建菜单的两个选项（功能 关于我们）
+        JMenu functionJMenu = new JMenu("功能");
+        JMenu aboutJMenu = new JMenu("关于我们");
+
+        //将三类添加到更换图片中
+        changeImage.add(girl);
+        changeImage.add(animal);
+        changeImage.add(car);
+
+
+        //将条目添加到menu中
+        functionJMenu.add(changeImage);
+        functionJMenu.add(replayItem);
+        functionJMenu.add(reLoginItem);
+        functionJMenu.add(closeItem);
+
+        aboutJMenu.add(aboutItem);
+
+
+
+
+        //给条目Item绑定事件
+        replayItem.addActionListener(this);
+        reLoginItem.addActionListener(this);
+        closeItem.addActionListener(this);
+        aboutItem.addActionListener(this);
+        girl.addActionListener(this);
+        animal.addActionListener(this);
+        car.addActionListener(this);
+
+
+        //将选项添加到菜单中
+        jMenuBar.add(functionJMenu);
+        jMenuBar.add(aboutJMenu);
+
+
+        //给主界面设置菜单
+        this.setJMenuBar(jMenuBar);
+
+
+    }
+
+    private void initJFrame() {
+        //设置界面的宽高
+        this.setSize(603, 680);
+        //设置界面的标题
+        this.setTitle("拼图单机版   V1.0");
+        //设置界面置顶
+        this.setAlwaysOnTop(true);
+        //设置界面居中
+        this.setLocationRelativeTo(null);
+        //设置界面关闭模式
+        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        //取消默认居中放置
+        this.setLayout(null);
+
+        //加入监听事件
+        this.addKeyListener(this);
+
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+        int code = e.getKeyCode();
+        if (code == 65) {
+            this.getContentPane().removeAll();
+            JLabel jLabel = new JLabel(ResourceLoader.loadIcon(path + "1.jpg"));
+            jLabel.setBounds(83, 134, 420, 420);
+            //加载完整图片
+            this.getContentPane().add(jLabel);
+
+            //添加背景图片
+            JLabel background = new JLabel(ResourceLoader.loadIcon("PuzzleImage\\img.png"));
+            background.setBounds(40, 40, 508, 560);
+            this.add(background);
+
+            //刷新界面
+            this.getContentPane().repaint();
+
+
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        //胜利之后，就结束方法
+        if (victory()) {
+            return;
+        }
+
+        int code = e.getKeyCode();
+
+        if (code == 37) {              //空白右移
+            System.out.println("向左移动");
+            if (y + 1 <= 3) {
+                data[x][y] = data[x][y + 1];
+                data[x][y + 1] = 0;
+                y++;
+                step++;
+                intiImage();
+            }
+        } else if (code == 38) {       //空白下移
+            System.out.println("向上移动");
+            if (x + 1 <= 3) {
+                data[x][y] = data[x + 1][y];
+                data[x + 1][y] = 0;
+                x++;
+                step++;
+                intiImage();
+            }
+        } else if (code == 39) {       //空白左移
+            System.out.println("向右移动");
+            if (y - 1 >= 0) {
+                data[x][y] = data[x][y - 1];
+                data[x][y - 1] = 0;
+                y--;
+                step++;
+                intiImage();
+            }
+        } else if (code == 40) {       //空白上移
+            System.out.println("向下移动");
+            if (x - 1 >= 0) {
+                data[x][y] = data[x - 1][y];
+                data[x - 1][y] = 0;
+                x--;
+                step++;
+                intiImage();
+            }
+        } else if (code == 65) {
+            intiImage();
+        } else if (code == 87) {
+            data = new int[][]{
+                    {1, 2, 3, 4},
+                    {5, 6, 7, 8},
+                    {9, 10, 11, 12},
+                    {13, 14, 15, 0}
+            };
+            x = 3;
+            y = 3;
+            intiImage();
+        } else {
+            System.out.println("按键有误");
+        }
+    }
+
+    public boolean victory() {
+        for (int i = 0; i < data.length; i++) {
+            for (int j = 0; j < data.length; j++) {
+                if (data[i][j] != win[i][j]) {
+                    return false;
+                }
+            }
+        }
+
+        //循环结束
+        return true;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
+        Object ob = e.getSource();
+
+        if (ob == replayItem) {
+            System.out.println("重新游戏");
+            //记计步器清零
+            step = 0;
+            //重新打乱二维数组
+            initData();
+            //重新加载图片
+            intiImage();
+        } else if (ob == reLoginItem) {
+            System.out.println("重新登录");
+            //先将主界面关闭，隐藏
+            this.setVisible(false);
+            //再回到登录界面
+            new LoginJFrame();
+
+        } else if (ob == closeItem) {
+            System.out.println("关闭游戏");
+            System.exit(0);
+        }
+        else if (ob == aboutItem) {
+            System.out.println("联系我们");
+            //创建Jdialog
+            JDialog about = new JDialog();
+            //创建管理图片的容器JLabel
+            JLabel aboutJlabel = new JLabel(ResourceLoader.loadIcon("PuzzleImage\\about.png"));
+            aboutJlabel.setBounds(0,0,200,200);
+            //将图片加入到弹框之中
+            about.getContentPane().add(aboutJlabel);
+            //设置弹框大小
+            about.setSize(300,300);
+            //弹框置顶
+            about.setAlwaysOnTop(true);
+            //弹框居中
+             about.setLocationRelativeTo(null);
+             //设置标题
+            about.setTitle("联系我们");
+             //不关闭弹框就不能下一步
+            about.setModal(true);
+            //显示弹框
+            about.setVisible(true);
+        }
+        else if(ob == girl){
+            System.out.println("更换美女图片");
+            Random r = new Random();
+            int index = r.nextInt(5) + 1;
+            //更换图片
+            path = "PuzzleImage\\image\\girl\\girl" + index + "\\";
+            step = 0;
+            //重新游戏
+            initData();
+            //重新加载图片
+            intiImage();
+
+        }
+        else if(ob == car){
+            System.out.println("更换汽车图片");
+            Random r = new Random();
+            int index = r.nextInt(5) + 1;
+            //更换图片
+            path = "PuzzleImage\\image\\car\\car" + index + "\\";
+            step = 0;
+            //重新游戏
+            initData();
+            //重新加载图片
+            intiImage();
+        }
+        else if(ob == animal){
+            System.out.println("更换动物图片");
+
+            Random r = new Random();
+            int index = r.nextInt(5) + 1;
+            //更换图片
+            path = "PuzzleImage\\image\\animal\\animal" + index + "\\";
+
+            step = 0;
+            //重新游戏
+            initData();
+            //重新加载图片
+            intiImage();
+        }
+
+    }
+}
